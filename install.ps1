@@ -75,13 +75,21 @@ New-ItemProperty -Path $runKey -Name 'shotlink' -PropertyType String `
     -Value ('"{0}" --background' -f $exe) -Force | Out-Null
 
 $config = Join-Path $env:APPDATA 'shotlink\config.ini'
+$gallery = ''
+if (Test-Path $config) {
+    $endpoint = (Select-String -Path $config -Pattern '^\s*endpoint\s*=\s*(.+)$').Matches.Groups[1].Value
+    if ($endpoint) { $gallery = ([uri]$endpoint).GetLeftPart('Authority') + '/gallery' }
+}
+
 Write-Host ''
 Write-Host "配置しました: $exe"
 Write-Host "設定ファイル: $config"
+if ($gallery) { Write-Host "一覧ページ  : $gallery" }
 Write-Host ''
 Write-Host '次にやること:'
 Write-Host '  1. スタートメニューの shotlink を右クリック →「タスクバーにピン留めする」'
 Write-Host '  2. ピン留めしたアイコンをクリックすると範囲選択が始まります'
+Write-Host '  3. 離すと出るバーで「コピー」か「保存」を選びます (Esc で破棄)'
 Write-Host ''
 Write-Host '常駐を止めるとき:  shotlink.exe --quit'
 

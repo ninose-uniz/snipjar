@@ -275,6 +275,24 @@ const tail = document.getElementById('tail');
 const count = document.getElementById('count');
 let cursor = null, loaded = 0, first = true;
 
+// navigator.clipboard needs a focused document and a granted permission, and it is
+// refused often enough (embedded views, older browsers) to need the old path too.
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  try {
+    const box = document.createElement('textarea');
+    box.value = text;
+    box.setAttribute('readonly', '');
+    box.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+    document.body.appendChild(box);
+    box.select();
+    box.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    box.remove();
+    return ok;
+  } catch (e) { return false; }
+}
+
 const when = iso => new Date(iso).toLocaleString('ja-JP',
   { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
 const size = n => n > 1048576 ? (n/1048576).toFixed(1)+' MB' : Math.round(n/1024)+' KB';
@@ -294,8 +312,7 @@ function tile(item) {
   const copy = document.createElement('button');
   copy.textContent = 'URL をコピー';
   copy.onclick = async () => {
-    try { await navigator.clipboard.writeText(item.url); copy.textContent = 'コピーしました'; }
-    catch { copy.textContent = 'コピーできません'; }
+    copy.textContent = await copyText(item.url) ? 'コピーしました' : 'コピーできません';
     setTimeout(() => { copy.textContent = 'URL をコピー'; }, 1400);
   };
   const del = document.createElement('button');

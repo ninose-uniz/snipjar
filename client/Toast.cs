@@ -27,6 +27,16 @@ namespace Shotlink
             Show_("アップロードしました ✓", url, url, Color.FromArgb(94, 200, 130));
         }
 
+        public static void Copied(string detail)
+        {
+            Show_("コピーしました", detail, null, Color.FromArgb(94, 200, 130));
+        }
+
+        public static void Saved(string path)
+        {
+            Show_("保存しました", path, path, Color.FromArgb(94, 200, 130));
+        }
+
         public static void Failure(string message, string savedPath)
         {
             Show_("アップロード失敗 — ローカルに保存しました", message, savedPath,

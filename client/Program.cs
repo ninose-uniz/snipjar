@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -111,14 +112,16 @@ namespace Shotlink
                     // Step out of the close before touching anything the form owns.
                     host.BeginInvoke((Action)delegate
                     {
-                        try { Crop(overlay.Selection, captured, virtualScreen); }
+                        Bitmap shot = null;
+                        try { shot = Crop(overlay.Selection, captured, virtualScreen); }
                         catch (Exception ex) { Toast.Notice("キャプチャできませんでした", ex.Message); }
                         finally
                         {
                             overlay.Dispose();
                             captured.Dispose();
-                            busy = false;
                         }
+                        if (shot == null) busy = false;
+                        else Offer(shot, overlay.Selection);
                     });
                 };
                 overlay.Show();
@@ -132,46 +135,87 @@ namespace Shotlink
             }
         }
 
-        static void Crop(Rectangle selection, Bitmap full, Rectangle virtualScreen)
+        static Bitmap Crop(Rectangle selection, Bitmap full, Rectangle virtualScreen)
         {
-            if (selection.Width <= 0 || selection.Height <= 0) return; // cancelled
+            if (selection.Width <= 0 || selection.Height <= 0) return null; // cancelled
 
             Rectangle local = new Rectangle(
                 selection.X - virtualScreen.X, selection.Y - virtualScreen.Y,
                 selection.Width, selection.Height);
-
-            byte[] png;
-            using (Bitmap crop = full.Clone(local, PixelFormat.Format24bppRgb))
-            {
-                png = ToPng(crop);
-            }
-            Send(png);
+            return full.Clone(local, PixelFormat.Format24bppRgb);
         }
 
-        static void Send(byte[] png)
+        // Nothing is copied, saved or sent until the bar is answered.
+        static void Offer(Bitmap shot, Rectangle selection)
+        {
+            ActionBar bar = new ActionBar(selection);
+            bar.FormClosed += delegate
+            {
+                ActionBar.Choice choice = bar.Result;
+                host.BeginInvoke((Action)delegate
+                {
+                    try { Apply(choice, shot); }
+                    catch (Exception ex) { Toast.Notice("処理できませんでした", ex.Message); }
+                    finally
+                    {
+                        bar.Dispose();
+                        shot.Dispose();
+                        busy = false;
+                    }
+                });
+            };
+            bar.Show();
+        }
+
+        static void Apply(ActionBar.Choice choice, Bitmap shot)
+        {
+            if (choice == ActionBar.Choice.None) return; // thrown away on purpose
+
+            byte[] png = ToPng(shot);
+            bool saved = false;
+
+            if (choice == ActionBar.Choice.Copy)
+            {
+                SetClipboardImage(shot);
+                Toast.Copied(shot.Width + " × " + shot.Height);
+            }
+            else
+            {
+                Toast.Saved(SaveLocally(png));
+                saved = true;
+            }
+
+            if (Config.UploadAlways) Send(png, ToThumbnail(shot), saved);
+        }
+
+        // Runs quietly in the background: the point of it is the gallery, so there
+        // is nothing to report unless it fails and the shot would otherwise be lost.
+        static void Send(byte[] png, byte[] thumbnail, bool alreadySaved)
         {
             Thread worker = new Thread(delegate()
             {
-                string url = null;
+                Shot shot = null;
                 string failure = null;
-                try { url = Uploader.Upload(png); }
+                try { shot = Uploader.Upload(png); }
                 catch (Exception ex) { failure = ex.Message; }
 
-                string resultUrl = url;
-                string resultError = failure;
+                if (shot != null)
+                {
+                    // A small screenshot can compress worse as JPEG than as PNG;
+                    // when that happens the gallery is better off with the original.
+                    if (thumbnail.Length < png.Length)
+                    {
+                        try { Uploader.UploadThumb(shot.Key, thumbnail); }
+                        catch { } // the gallery falls back to the full image
+                    }
+                    return;
+                }
+
+                string message = failure;
                 host.BeginInvoke((Action)delegate
                 {
-                    if (resultUrl != null)
-                    {
-                        SetClipboard(resultUrl);
-                        Toast.Success(resultUrl);
-                    }
-                    else
-                    {
-                        string saved = SaveLocally(png);
-                        SetClipboard(saved);
-                        Toast.Failure(resultError, saved);
-                    }
+                    if (alreadySaved) Toast.Notice("一覧には残せませんでした", message);
+                    else Toast.Failure(message, SaveLocally(png));
                 });
             });
             worker.IsBackground = true;
@@ -186,10 +230,16 @@ namespace Shotlink
             try
             {
                 byte[] png;
-                using (Bitmap bitmap = Grab(Screen.PrimaryScreen.Bounds)) { png = ToPng(bitmap); }
-                string url = Uploader.Upload(png);
-                SetClipboard(url);
-                WriteRunLog("OK " + url + " (" + png.Length + " bytes)");
+                byte[] thumbnail;
+                using (Bitmap bitmap = Grab(Screen.PrimaryScreen.Bounds))
+                {
+                    png = ToPng(bitmap);
+                    thumbnail = ToThumbnail(bitmap);
+                }
+                Shot shot = Uploader.Upload(png);
+                Uploader.UploadThumb(shot.Key, thumbnail);
+                SetClipboard(shot.Url);
+                WriteRunLog("OK " + shot.Url + " (" + png.Length + " bytes)");
                 return true;
             }
             catch (Exception ex)
@@ -218,10 +268,49 @@ namespace Shotlink
             }
         }
 
+        // Small enough that a page of the gallery is a few hundred KB, not tens of MB.
+        static byte[] ToThumbnail(Bitmap source)
+        {
+            const int MaxWidth = 400;
+            double scale = Math.Min(1.0, (double)MaxWidth / source.Width);
+            int width = Math.Max(1, (int)Math.Round(source.Width * scale));
+            int height = Math.Max(1, (int)Math.Round(source.Height * scale));
+
+            using (Bitmap small = new Bitmap(width, height, PixelFormat.Format24bppRgb))
+            {
+                using (Graphics g = Graphics.FromImage(small))
+                {
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.DrawImage(source, new Rectangle(0, 0, width, height));
+                }
+                return ToJpeg(small, 72L);
+            }
+        }
+
+        static byte[] ToJpeg(Bitmap bitmap, long quality)
+        {
+            ImageCodecInfo jpeg = null;
+            foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageEncoders())
+            {
+                if (codec.MimeType == "image/jpeg") { jpeg = codec; break; }
+            }
+
+            using (EncoderParameters settings = new EncoderParameters(1))
+            using (MemoryStream buffer = new MemoryStream())
+            {
+                settings.Param[0] = new EncoderParameter(
+                    System.Drawing.Imaging.Encoder.Quality, quality);
+                bitmap.Save(buffer, jpeg, settings);
+                return buffer.ToArray();
+            }
+        }
+
         static string SaveLocally(byte[] png)
         {
-            Directory.CreateDirectory(Config.FallbackDir);
-            string path = Path.Combine(Config.FallbackDir,
+            string directory = Config.SaveDir ?? Config.DefaultSaveDir;
+            Directory.CreateDirectory(directory);
+            string path = Path.Combine(directory,
                 DateTime.Now.ToString("yyyyMMdd-HHmmss-fff") + ".png");
             File.WriteAllBytes(path, png);
             return path;
@@ -230,11 +319,21 @@ namespace Shotlink
         // The clipboard is shared; another app can hold it for a moment.
         static void SetClipboard(string text)
         {
+            Retry(delegate { Clipboard.SetText(text); });
+        }
+
+        static void SetClipboardImage(Bitmap bitmap)
+        {
+            Retry(delegate { Clipboard.SetImage(bitmap); });
+        }
+
+        static void Retry(Action action)
+        {
             for (int attempt = 0; attempt < 6; attempt++)
             {
                 try
                 {
-                    Clipboard.SetText(text);
+                    action();
                     return;
                 }
                 catch

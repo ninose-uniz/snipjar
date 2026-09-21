@@ -7,6 +7,8 @@ namespace Shotlink
     {
         public static string Endpoint;
         public static string Token;
+        public static bool UploadAlways = true;
+        public static string SaveDir;
 
         public static string Dir
         {
@@ -23,13 +25,31 @@ namespace Shotlink
             get { return Path.Combine(Dir, "config.ini"); }
         }
 
-        public static string FallbackDir
+        public static string DefaultSaveDir
         {
             get
             {
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
                     "shotlink");
+            }
+        }
+
+        // The gallery lives next to the upload endpoint on the same Worker.
+        public static string GalleryUrl
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Endpoint)) return null;
+                try
+                {
+                    Uri uri = new Uri(Endpoint);
+                    return uri.GetLeftPart(UriPartial.Authority) + "/gallery";
+                }
+                catch (UriFormatException)
+                {
+                    return null;
+                }
             }
         }
 
@@ -49,6 +69,9 @@ namespace Shotlink
 
             string endpoint = null;
             string token = null;
+            string upload = null;
+            string saveDir = null;
+
             foreach (string line in File.ReadAllLines(FilePath))
             {
                 string trimmed = line.Trim();
@@ -59,6 +82,8 @@ namespace Shotlink
                 string value = trimmed.Substring(eq + 1).Trim();
                 if (key == "endpoint") endpoint = value;
                 else if (key == "token") token = value;
+                else if (key == "upload") upload = value.ToLowerInvariant();
+                else if (key == "savedir") saveDir = value;
             }
 
             if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(token))
@@ -69,6 +94,8 @@ namespace Shotlink
 
             Endpoint = endpoint;
             Token = token;
+            UploadAlways = upload != "never" && upload != "no" && upload != "off";
+            SaveDir = string.IsNullOrEmpty(saveDir) ? DefaultSaveDir : saveDir;
             return true;
         }
 
@@ -78,8 +105,11 @@ namespace Shotlink
                 "# shotlink\r\n"
                 + "# endpoint: Worker のアップロード先\r\n"
                 + "# token   : wrangler secret put UPLOAD_TOKEN で登録したもの\r\n"
+                + "# upload  : always = 一覧に残すため裏で R2 にも上げる / never = 一切上げない\r\n"
+                + "# savedir : 「保存」の保存先 (省略時は Pictures\\shotlink)\r\n"
                 + "endpoint=https://shotlink.example.workers.dev/upload\r\n"
-                + "token=\r\n");
+                + "token=\r\n"
+                + "upload=always\r\n");
         }
     }
 }
