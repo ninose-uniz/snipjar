@@ -1,0 +1,7 @@
+name = "shotlink"
+main = "worker/index.js"
+compatibility_date = "2026-09-01"
+
+[[r2_buckets]]
+binding = "SHOTS"
+bucket_name = "shotlink"

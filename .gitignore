@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+dist/
+*.exe
+config.ini
+client/app.ico
+.dev.vars
