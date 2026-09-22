@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace Shotlink
+namespace Snipjar
 {
     class Shot
     {
@@ -49,7 +49,7 @@ namespace Shotlink
             request.Method = "POST";
             request.ContentType = contentType;
             request.Headers["Authorization"] = "Bearer " + Config.Token;
-            request.UserAgent = "shotlink/1.0";
+            request.UserAgent = "snipjar/1.0";
             request.Timeout = TimeoutMs;
             request.ReadWriteTimeout = TimeoutMs;
             request.ContentLength = payload.Length;

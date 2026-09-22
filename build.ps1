@@ -1,8 +1,8 @@
-﻿# shotlink.exe をビルドする。.NET SDK は不要で、Windows 同梱の csc.exe を使う。
+﻿# snipjar.exe をビルドする。.NET SDK は不要で、Windows 同梱の csc.exe を使う。
 $ErrorActionPreference = 'Stop'
 
 $client = Join-Path $PSScriptRoot 'client'
-$output = Join-Path $PSScriptRoot 'shotlink.exe'
+$output = Join-Path $PSScriptRoot 'snipjar.exe'
 $icon = Join-Path $client 'app.ico'
 
 $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'

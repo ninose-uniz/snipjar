@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace Shotlink
+namespace Snipjar
 {
     // Full-desktop dimmed overlay. The screen is already captured before this
     // opens, so the crop comes out of that bitmap and nothing can slip in between.

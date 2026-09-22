@@ -1,13 +1,14 @@
 ﻿using System;
 using System.IO;
 
-namespace Shotlink
+namespace Snipjar
 {
     static class Config
     {
         public static string Endpoint;
         public static string Token;
         public static bool UploadAlways = true;
+        public static bool CheckUpdates = true;
         public static string SaveDir;
 
         public static string Dir
@@ -16,7 +17,7 @@ namespace Shotlink
             {
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "shotlink");
+                    "snipjar");
             }
         }
 
@@ -31,7 +32,7 @@ namespace Shotlink
             {
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-                    "shotlink");
+                    "snipjar");
             }
         }
 
@@ -71,6 +72,7 @@ namespace Shotlink
             string token = null;
             string upload = null;
             string saveDir = null;
+            string updateCheck = null;
 
             foreach (string line in File.ReadAllLines(FilePath))
             {
@@ -84,6 +86,7 @@ namespace Shotlink
                 else if (key == "token") token = value;
                 else if (key == "upload") upload = value.ToLowerInvariant();
                 else if (key == "savedir") saveDir = value;
+                else if (key == "updatecheck") updateCheck = value.ToLowerInvariant();
             }
 
             if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(token))
@@ -95,6 +98,7 @@ namespace Shotlink
             Endpoint = endpoint;
             Token = token;
             UploadAlways = upload != "never" && upload != "no" && upload != "off";
+            CheckUpdates = updateCheck != "off" && updateCheck != "no" && updateCheck != "never";
             SaveDir = string.IsNullOrEmpty(saveDir) ? DefaultSaveDir : saveDir;
             return true;
         }
@@ -102,12 +106,13 @@ namespace Shotlink
         static void WriteTemplate()
         {
             File.WriteAllText(FilePath,
-                "# shotlink\r\n"
-                + "# endpoint: Worker のアップロード先\r\n"
-                + "# token   : wrangler secret put UPLOAD_TOKEN で登録したもの\r\n"
-                + "# upload  : always = 一覧に残すため裏で R2 にも上げる / never = 一切上げない\r\n"
-                + "# savedir : 「保存」の保存先 (省略時は Pictures\\shotlink)\r\n"
-                + "endpoint=https://shotlink.example.workers.dev/upload\r\n"
+                "# Snipjar\r\n"
+                + "# endpoint   : Worker のアップロード先\r\n"
+                + "# token      : wrangler secret put UPLOAD_TOKEN で登録したもの\r\n"
+                + "# upload     : always = 一覧に残すため裏で R2 にも上げる / never = 一切上げない\r\n"
+                + "# savedir    : 「保存」の保存先 (省略時は Pictures\\snipjar)\r\n"
+                + "# updatecheck: off にすると GitHub への更新確認をしない\r\n"
+                + "endpoint=https://snipjar.example.workers.dev/upload\r\n"
                 + "token=\r\n"
                 + "upload=always\r\n");
         }

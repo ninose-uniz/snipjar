@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace Shotlink
+namespace Snipjar
 {
     // The small bar that appears next to the selection once the drag ends.
     // Nothing happens to the capture until one of these is pressed.

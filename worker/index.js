@@ -4,7 +4,7 @@ const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 const CUTOFF = 256 - (256 % ALPHABET.length); // reject above this to keep it uniform
 const KEY_PATTERN = /^[0-9A-Za-z]{16,64}$/;
 const THUMB_PREFIX = "thumb/";
-const COOKIE = "shotlink_session";
+const COOKIE = "snipjar_session";
 const PAGE = 24;
 
 // R2 only lists lexicographically, so the key carries an inverted timestamp:
@@ -253,9 +253,9 @@ form.login button { width:100%; margin-top:10px; padding:11px; font:inherit; bor
 function loginPage(error) {
   return `<!doctype html><html lang="ja"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>shotlink</title><style>${STYLE}</style>
+<title>Snipjar</title><style>${STYLE}</style>
 <form class="login" method="post" action="/gallery/auth">
-  <h1>shotlink</h1>
+  <h1>Snipjar</h1>
   ${error ? `<p class="error">${error}</p>` : ""}
   <input type="password" name="token" placeholder="アップロード用トークン" autofocus required>
   <button type="submit">開く</button>
@@ -266,8 +266,8 @@ function loginPage(error) {
 function galleryPage() {
   return `<!doctype html><html lang="ja"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>shotlink</title><style>${STYLE}</style>
-<header><h1>shotlink</h1><div class="count" id="count">読み込み中…</div></header>
+<title>Snipjar</title><style>${STYLE}</style>
+<header><h1>Snipjar</h1><div class="count" id="count">読み込み中…</div></header>
 <main><div class="grid" id="grid"></div><div id="tail"></div></main>
 <script>
 const grid = document.getElementById('grid');
@@ -394,7 +394,7 @@ export default {
       const shot = path.match(/^\/([0-9A-Za-z]{16,64})(?:\.png)?$/);
       if (shot) return serve(shot[1], "image/png", shot[1] + ".png", env, method);
 
-      if (path === "/") return text("shotlink\n", 200);
+      if (path === "/") return text("snipjar\n", 200);
     }
 
     return text("not found\n", 404);

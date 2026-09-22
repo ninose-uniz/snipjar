@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Shotlink
+namespace Snipjar
 {
     // Bottom-right notification. Deliberately not a tray balloon: the app keeps
     // no notification-area icon, so this is drawn and owned by us.
@@ -35,6 +35,12 @@ namespace Shotlink
         public static void Saved(string path)
         {
             Show_("保存しました", path, path, Color.FromArgb(94, 200, 130));
+        }
+
+        public static void Update(string headline, string link)
+        {
+            Show_(headline, "クリックするとリリースページを開きます", link,
+                Color.FromArgb(120, 165, 240));
         }
 
         public static void Failure(string message, string savedPath)

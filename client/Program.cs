@@ -7,13 +7,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace Shotlink
+namespace Snipjar
 {
     static class Program
     {
-        const string InstanceName = @"Local\shotlink.instance";
-        const string CaptureName = @"Local\shotlink.capture";
-        const string QuitName = @"Local\shotlink.quit";
+        const string InstanceName = @"Local\snipjar.instance";
+        const string CaptureName = @"Local\snipjar.capture";
+        const string QuitName = @"Local\snipjar.quit";
 
         static Mutex instance;
         static EventWaitHandle captureSignal;
@@ -50,7 +50,7 @@ namespace Shotlink
             string error;
             if (!Config.Load(out error))
             {
-                MessageBox.Show(error, "shotlink", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(error, "Snipjar", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -67,6 +67,14 @@ namespace Shotlink
             GC.KeepAlive(handle);
 
             StartWaiter();
+
+            Updater.CheckLater(delegate(string version)
+            {
+                host.BeginInvoke((Action)delegate
+                {
+                    Toast.Update("Snipjar " + version + " が出ています", Updater.ReleasesPage);
+                });
+            });
 
             // Started from the icon rather than at logon, and nothing was resident
             // yet: the user still wants the capture they just asked for.

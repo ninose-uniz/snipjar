@@ -1,4 +1,4 @@
-﻿# shotlink
+﻿# snipjar
 
 タスクバーのアイコンを押す → 範囲をドラッグ → 「コピー」か「保存」を選ぶ。
 撮ったものは自分の Cloudflare R2 にも貯まり、ブラウザの一覧ページで見返せる。
@@ -21,7 +21,7 @@
 ## サーバー側の準備
 
 ```powershell
-npx wrangler r2 bucket create shotlink
+npx wrangler r2 bucket create snipjar
 npx wrangler secret put UPLOAD_TOKEN   # 長いランダム文字列を貼る
 npx wrangler deploy
 ```
@@ -35,15 +35,15 @@ R2 は Cloudflare ダッシュボードで有効化しておく (無料枠 10GB)
 ```
 
 配置先・自動起動の登録内容を表示してから確認を求める。終わったらスタートメニューの
-shotlink を右クリックして「タスクバーにピン留めする」。
+snipjar を右クリックして「タスクバーにピン留めする」。
 
-設定は `%APPDATA%\shotlink\config.ini`:
+設定は `%APPDATA%\snipjar\config.ini`:
 
 ```ini
-endpoint=https://shotlink.<subdomain>.workers.dev/upload
+endpoint=https://snipjar.<subdomain>.workers.dev/upload
 token=<UPLOAD_TOKEN と同じ値>
 upload=always   ; never にすると R2 には一切上げない (一覧にも残らない)
-savedir=        ; 「保存」の保存先。省略時は Pictures\shotlink
+savedir=        ; 「保存」の保存先。省略時は Pictures\snipjar
 ```
 
 トークンはここにしか置かない。リポジトリには入れない。
@@ -52,16 +52,16 @@ savedir=        ; 「保存」の保存先。省略時は Pictures\shotlink
 
 - ピン留めしたアイコンをクリック → 範囲をドラッグ → 離すとバーが出る
   - **コピー** (`C`) … 画像をクリップボードへ。Discord や Slack にそのまま貼れる
-  - **保存** (`S`) … `Pictures\shotlink\` に PNG
+  - **保存** (`S`) … `Pictures\snipjar\` に PNG
   - `Esc` またはバーの外をクリック → 破棄。押すまで何も起きない
 - 範囲選択中のキャンセルは `Esc` / 右クリック / ごく小さいドラッグ
 - どちらを押した場合も、裏で R2 にも上がって一覧に残る (`upload=never` で止まる)
-- アップロードに失敗したときは `Pictures\shotlink\` に保存し、そのパスを
+- アップロードに失敗したときは `Pictures\snipjar\` に保存し、そのパスを
   クリップボードに入れる (撮ったものは失わない)
 
 ## 一覧ページ
 
-`https://shotlink.<subdomain>.workers.dev/gallery`
+`https://snipjar.<subdomain>.workers.dev/gallery`
 
 初回だけトークンを入力する。以後は HttpOnly Cookie で開ける (トークンは URL に載せない)。
 サムネイル・日時・サイズが新しい順に並び、`URL をコピー` と `削除` ができる。
@@ -71,10 +71,10 @@ savedir=        ; 「保存」の保存先。省略時は Pictures\shotlink
 
 | | |
 |---|---|
-| `shotlink.exe` | 常駐していれば範囲選択を開始、していなければ常駐しつつ開始 |
-| `shotlink.exe --background` | 常駐だけする (自動起動で使う) |
-| `shotlink.exe --quit` | 常駐を終了する |
-| `shotlink.exe --capture-full` | 画面全体を撮って送る。結果は `%APPDATA%\shotlink\last-run.log` |
+| `snipjar.exe` | 常駐していれば範囲選択を開始、していなければ常駐しつつ開始 |
+| `snipjar.exe --background` | 常駐だけする (自動起動で使う) |
+| `snipjar.exe --quit` | 常駐を終了する |
+| `snipjar.exe --capture-full` | 画面全体を撮って送る。結果は `%APPDATA%\snipjar\last-run.log` |
 
 ## 作りの理由（追記）
 
