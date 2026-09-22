@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snipjar — スクショは自分のストレージに</title>
+<meta name="description" content="範囲をドラッグしてコピーか保存。撮ったものは自分の Cloudflare R2 に貯まり、自分だけの一覧ページで見返せる Windows 用スクリーンショットツール。">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f7f8fa; --card: #fff; --ink: #1b1d21; --sub: #676e7b;
+    --line: #e2e5ea; --accent: #2f6fed; --accent-soft: #e8f0ff; --code: #f1f3f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121317; --card: #1b1d21; --ink: #e9eaee; --sub: #9aa1ad;
+      --line: #2b2e35; --accent: #6fa3ff; --accent-soft: #1c2637; --code: #202329;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.75 "Yu Gothic UI", -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 80px 0 56px; }
+  h1 { font-size: 44px; line-height: 1.2; margin: 0 0 14px; letter-spacing: -0.01em; }
+  .tagline { font-size: 19px; color: var(--sub); margin: 0 0 30px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    display: inline-block; padding: 12px 24px; border-radius: 9px; text-decoration: none;
+    background: var(--accent); color: #fff; font-weight: 600;
+  }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .note { font-size: 13px; color: var(--sub); margin-top: 10px; }
+  h2 { font-size: 22px; margin: 52px 0 14px; }
+  h3 { font-size: 16px; margin: 28px 0 8px; }
+  p { margin: 0 0 16px; }
+  .lead { font-size: 17px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .shots { display: flex; flex-direction: column; gap: 16px; margin: 24px 0; }
+  .shots figure { margin: 0; }
+  .shots img { max-width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  .shots figcaption { font-size: 13px; color: var(--sub); margin-top: 7px; }
+  pre {
+    background: var(--code); border: 1px solid var(--line); border-radius: 9px;
+    padding: 14px 16px; overflow-x: auto; font-size: 14px; line-height: 1.6;
+  }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  p code, li code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  ol { padding-left: 22px; }
+  ol li { margin-bottom: 10px; }
+  .keys { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  .keys td { border-top: 1px solid var(--line); padding: 10px 4px; vertical-align: top; }
+  .keys td:first-child { white-space: nowrap; padding-right: 20px; font-weight: 600; }
+  .warn { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  footer { margin: 72px 0 60px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--sub); font-size: 14px; }
+  a { color: var(--accent); }
+  svg.flow { width: 100%; height: auto; margin: 18px 0 8px; }
+  @media (max-width: 560px) { header { padding: 52px 0 36px; } h1 { font-size: 32px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>スクショは、自分の<br>ストレージに貯まる。</h1>
+    <p class="tagline">
+      範囲をドラッグして「コピー」か「保存」。撮ったものは <strong>あなたの</strong>
+      Cloudflare に入り、あなただけの一覧ページに並びます。
+      預ける相手も、使い切る無料枠もありません。
+    </p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/ninose-uniz/snipjar/releases/latest">ダウンロード</a>
+      <a class="btn ghost" href="https://github.com/ninose-uniz/snipjar">GitHub</a>
+    </div>
+    <p class="note">Windows 10 / 11・MIT ライセンス・要 Cloudflare アカウント（R2 無料枠 10GB）</p>
+  </header>
+
+  <h2>動き</h2>
+  <svg class="flow" viewBox="0 0 700 108" role="img" aria-label="アイコンをクリック、ドラッグ、コピーか保存、一覧に残る">
+    <defs>
+      <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0 0 L8 4 L0 8 z" fill="currentColor" opacity=".45"/>
+      </marker>
+    </defs>
+    <g fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45" marker-end="url(#a)">
+      <line x1="150" y1="42" x2="190" y2="42"/>
+      <line x1="320" y1="42" x2="360" y2="42"/>
+      <line x1="490" y1="42" x2="530" y2="42"/>
+    </g>
+    <g fill="none" stroke="currentColor" stroke-width="1.3" opacity=".3">
+      <rect x="12" y="20" width="136" height="44" rx="8"/>
+      <rect x="192" y="20" width="128" height="44" rx="8"/>
+      <rect x="362" y="20" width="128" height="44" rx="8"/>
+      <rect x="532" y="20" width="156" height="44" rx="8"/>
+    </g>
+    <g font-family="inherit" font-size="13" fill="currentColor" text-anchor="middle">
+      <text x="80" y="47">アイコンをクリック</text>
+      <text x="256" y="47">範囲をドラッグ</text>
+      <text x="426" y="47">コピー / 保存</text>
+      <text x="610" y="47">一覧に残る</text>
+    </g>
+    <g font-family="inherit" font-size="11" fill="currentColor" opacity=".55" text-anchor="middle">
+      <text x="80" y="86">常駐しているので待たない</text>
+      <text x="256" y="86">離した瞬間にバーが出る</text>
+      <text x="426" y="86">押すまで何も起きない</text>
+      <text x="610" y="86">自分の R2 の中だけ</text>
+    </g>
+  </svg>
+
+  <div class="shots">
+    <figure>
+      <img src="actionbar.png" alt="ドラッグを離すと選択範囲の脇に「コピー」「保存」のバーが出る">
+      <figcaption>ドラッグを離すと、選択範囲の脇にバーが出ます。押すまで何も起きません。</figcaption>
+    </figure>
+    <figure>
+      <img src="toast.png" alt="右下に「コピーしました」と切り取ったサイズが表示される通知">
+      <figcaption>結果は右下に出ます。通知領域にアイコンは置きません。</figcaption>
+    </figure>
+  </div>
+
+  <h2>なぜ自分のストレージなのか</h2>
+  <p class="lead">
+    スクリーンショットには、見せるつもりのないものが写ります。
+    開いていたタブ、社内の画面、誰かの名前。
+  </p>
+  <p>
+    Snipjar には預かり先がありません。Worker も R2 バケットも、あなたが自分の Cloudflare
+    アカウントにデプロイしたもので、作者は中身を見られません。
+    サービス終了も、規約変更も、容量の上限で困ることもない。代わりに、Cloudflare の
+    アカウントだけ自分で用意してもらいます。
+  </p>
+
+  <h2>入れかた</h2>
+  <ol>
+    <li><a href="https://github.com/ninose-uniz/snipjar/releases/latest">Releases</a> から zip を落として展開する</li>
+    <li>そのフォルダで PowerShell を開き、<code>.\setup.ps1</code> を実行する<br>
+      <span class="note">Cloudflare へのログイン、バケット作成、デプロイ、設定、常駐までまとめてやります。
+      アカウントに何を作るかは、作る前に表示して確認します。</span></li>
+    <li>スタートメニューの Snipjar を右クリック →「タスクバーにピン留めする」</li>
+  </ol>
+
+  <div class="warn">
+    <h3 style="margin-top:0">Windows が警告を出します</h3>
+    <p style="margin-bottom:10px">
+      「Windows によって PC が保護されました」と出ます。<strong>コード署名をしていない</strong>
+      ためです。証明書は毎年費用がかかり、入れてもしばらく警告は消えません。
+      納得できる場合だけ「詳細情報 → 実行」を押してください。
+    </p>
+    <p style="margin-bottom:0">
+      信用できなければ、リリースの <code>SHA256SUMS.txt</code> と照合するか、
+      <code>build.ps1</code> で自分でビルドしてください。Windows 以外に何も要りません。
+    </p>
+  </div>
+
+  <h2>使いかた</h2>
+  <table class="keys">
+    <tr><td>クリック</td><td>画面が暗転するので範囲をドラッグ</td></tr>
+    <tr><td>コピー / <code>C</code></td><td>画像をクリップボードへ。Discord や Slack にそのまま貼れます</td></tr>
+    <tr><td>保存 / <code>S</code></td><td><code>Pictures\snipjar\</code> に PNG</td></tr>
+    <tr><td><code>Esc</code></td><td>破棄。範囲選択中なら選択をやめる</td></tr>
+  </table>
+  <p>
+    どちらを選んでも裏で自分の R2 に上がり、一覧ページに並びます。
+    外に出したくない日は <code>config.ini</code> に <code>upload=never</code> と書けば止まります。
+  </p>
+
+  <h2>必要なもの</h2>
+  <pre><code>Windows 10 / 11
+Cloudflare アカウント（R2 を有効化。無料枠 10GB）
+Node.js（デプロイに使う wrangler のため）</code></pre>
+  <p class="note">
+    .NET SDK は要りません。クライアントは Windows に同梱されている
+    <code>csc.exe</code> でビルドします。exe は 130KB 程度です。
+  </p>
+
+  <footer>
+    <a href="https://github.com/ninose-uniz/snipjar">GitHub</a> ·
+    <a href="https://github.com/ninose-uniz/snipjar/blob/main/README.md">English README</a> ·
+    <a href="https://github.com/ninose-uniz/snipjar/blob/main/LICENSE">MIT</a>
+  </footer>
+</div>
+</html>

@@ -1,100 +1,136 @@
-﻿# snipjar
+# Snipjar
 
-タスクバーのアイコンを押す → 範囲をドラッグ → 「コピー」か「保存」を選ぶ。
-撮ったものは自分の Cloudflare R2 にも貯まり、ブラウザの一覧ページで見返せる。
+Drag a region, choose **copy** or **save**. Your screenshots go into **your own**
+Cloudflare R2 bucket and show up in a private gallery you can open from anywhere.
+
+日本語版は [README.ja.md](README.ja.md)。
 
 ```
-常駐 → アイコンをクリック → 画面が暗転して十字カーソル → ドラッグ
-     → 離すと選択範囲の脇にバーが出る → コピー / 保存 → 右下に通知
-                                        ↘ 裏で R2 にも上がり、一覧に並ぶ
+resident → click the pinned icon → the screen dims, crosshair cursor → drag
+         → release, a small bar appears next to the selection
+         → コピー (copy the image) or 保存 (save a PNG)
+         → it also lands in your gallery
 ```
 
-## 構成
+![The bar that appears when you release the drag](docs/actionbar.png)
+![The notification in the bottom-right corner](docs/toast.png)
+
+## Why another screenshot tool
+
+Because nothing here runs on someone else's server. There is no account to make,
+no free tier to outgrow, and no company holding your screenshots — the Worker and
+the bucket are in your own Cloudflare account, deployed by you, and the author
+never sees any of it. That also means there is nobody to shut it down.
+
+## What it needs
+
+- Windows 10 / 11
+- A Cloudflare account with **R2 enabled** (free tier: 10 GB, card on file required)
+- [Node.js](https://nodejs.org/) — only to run `wrangler`, the Cloudflare deploy tool
+
+No .NET SDK. The client is built with the `csc.exe` that ships with Windows.
+
+## Install
+
+1. Download the latest zip from [Releases](https://github.com/ninose-uniz/snipjar/releases/latest)
+   and unpack it somewhere.
+2. Open PowerShell in that folder and run:
+
+   ```powershell
+   .\setup.ps1
+   ```
+
+   It logs you into Cloudflare, creates the R2 bucket, deploys the Worker, mints an
+   upload token, writes the config and installs the client. It tells you what it is
+   about to do before it touches your account.
+3. Right-click **Snipjar** in the Start menu → **Pin to taskbar**.
+
+### Windows will warn you about the exe
+
+It will say *"Windows protected your PC"*. That is because this build is **not code
+signed** — a certificate costs money every year and the warning does not go away
+immediately even with one. Click **More info → Run anyway** if you are willing to.
+
+If you would rather not take that on faith, check the hash against `SHA256SUMS.txt`
+in the release:
+
+```powershell
+Get-FileHash .\snipjar.exe -Algorithm SHA256
+```
+
+Or skip the release entirely and build it yourself — `build.ps1` needs nothing but
+Windows.
+
+## Using it
 
 | | |
 |---|---|
-| `worker/index.js` | アップロードの受け口・画像配信・一覧ページ (Cloudflare Workers + R2) |
-| `client/*.cs` | 常駐アプリ (C# / WinForms, .NET Framework 4.8) |
-| `build.ps1` | Windows 同梱の `csc.exe` でビルド。.NET SDK も NuGet も要らない |
-| `install.ps1` | 配置・自動起動の登録・ショートカット作成 |
+| Click the pinned icon | the screen dims, drag out a region |
+| `Esc` / right click / a tiny drag | cancel the selection |
+| **コピー** or `C` | the image goes to the clipboard — paste it straight into Discord or Slack |
+| **保存** or `S` | a PNG in `Pictures\snipjar\` |
+| `Esc` / click away | throw the capture away. Nothing happens until you choose |
 
-## サーバー側の準備
+Both actions also upload to your bucket so the gallery stays a complete record.
+The gallery lives at `https://snipjar.<your-subdomain>.workers.dev/gallery` — paste
+the token once and it keeps you signed in with an HttpOnly cookie. Newest first,
+with the URL and a delete button on every tile.
 
-```powershell
-npx wrangler r2 bucket create snipjar
-npx wrangler secret put UPLOAD_TOKEN   # 長いランダム文字列を貼る
-npx wrangler deploy
-```
+## Settings
 
-R2 は Cloudflare ダッシュボードで有効化しておく (無料枠 10GB)。
-
-## クライアント側の準備
-
-```powershell
-.\install.ps1
-```
-
-配置先・自動起動の登録内容を表示してから確認を求める。終わったらスタートメニューの
-snipjar を右クリックして「タスクバーにピン留めする」。
-
-設定は `%APPDATA%\snipjar\config.ini`:
+`%APPDATA%\snipjar\config.ini`
 
 ```ini
-endpoint=https://snipjar.<subdomain>.workers.dev/upload
-token=<UPLOAD_TOKEN と同じ値>
-upload=always   ; never にすると R2 には一切上げない (一覧にも残らない)
-savedir=        ; 「保存」の保存先。省略時は Pictures\snipjar
+endpoint=https://snipjar.<your-subdomain>.workers.dev/upload
+token=<the same value as the Worker's UPLOAD_TOKEN>
+upload=always      ; never = keep everything local, nothing is uploaded
+savedir=           ; where 保存 writes. Default: Pictures\snipjar
+updatecheck=       ; off = never contact GitHub
 ```
 
-トークンはここにしか置かない。リポジトリには入れない。
+Restart the resident copy after editing:
 
-## 使い方
+```powershell
+& "$env:LOCALAPPDATA\snipjar\snipjar.exe" --quit
+Start-Process "$env:LOCALAPPDATA\snipjar\snipjar.exe" -ArgumentList '--background'
+```
 
-- ピン留めしたアイコンをクリック → 範囲をドラッグ → 離すとバーが出る
-  - **コピー** (`C`) … 画像をクリップボードへ。Discord や Slack にそのまま貼れる
-  - **保存** (`S`) … `Pictures\snipjar\` に PNG
-  - `Esc` またはバーの外をクリック → 破棄。押すまで何も起きない
-- 範囲選択中のキャンセルは `Esc` / 右クリック / ごく小さいドラッグ
-- どちらを押した場合も、裏で R2 にも上がって一覧に残る (`upload=never` で止まる)
-- アップロードに失敗したときは `Pictures\snipjar\` に保存し、そのパスを
-  クリップボードに入れる (撮ったものは失わない)
+**Heads up:** on many machines `Pictures` resolves to `OneDrive\Pictures`, so saved
+PNGs sync to OneDrive. Set `savedir` to a local path if you do not want that.
 
-## 一覧ページ
+### What talks to the network
 
-`https://snipjar.<subdomain>.workers.dev/gallery`
+- Uploads go to your own Worker, nowhere else.
+- Once a day the app asks `api.github.com` whether there is a newer release, and
+  says so in a notification. It never downloads or installs anything on its own.
+  `updatecheck=off` stops it.
 
-初回だけトークンを入力する。以後は HttpOnly Cookie で開ける (トークンは URL に載せない)。
-サムネイル・日時・サイズが新しい順に並び、`URL をコピー` と `削除` ができる。
-サムネイルをクリックすると原寸が開く。
-
-### コマンドライン
+## Command line
 
 | | |
 |---|---|
-| `snipjar.exe` | 常駐していれば範囲選択を開始、していなければ常駐しつつ開始 |
-| `snipjar.exe --background` | 常駐だけする (自動起動で使う) |
-| `snipjar.exe --quit` | 常駐を終了する |
-| `snipjar.exe --capture-full` | 画面全体を撮って送る。結果は `%APPDATA%\snipjar\last-run.log` |
+| `snipjar.exe` | start a selection (or make the resident copy start one) |
+| `snipjar.exe --background` | just stay resident. Used by the logon entry |
+| `snipjar.exe --quit` | stop the resident copy |
+| `snipjar.exe --capture-full` | grab the whole primary screen and upload it |
 
-## 作りの理由（追記）
+## Uninstall
 
-- **一覧のために別の索引を持たない**。R2 の `list()` は辞書順しか返さないので、キーの先頭に
-  反転タイムスタンプを埋め、辞書順＝新しい順にした。ランダム部 16 文字が推測不能性を担う。
-- **サムネイルはクライアントが作る**。Workers 単体では画像を縮小できず、原寸 PNG を並べると
-  1 ページ数十 MB になるため。JPEG のほうが大きくなる小さい画像では送らず、原寸にフォールバックする。
-- **一覧のトークンは Cookie に入れる**。URL に載せると履歴や共有リンクに残る。
-- **URL コピーは `execCommand` にフォールバックする**。`navigator.clipboard` は
-  フォーカスと許可を要求し、埋め込みビューでは拒否されることがある。
+```powershell
+.\install.ps1 -Uninstall
+```
 
-## 作りの理由
+Removes the exe, the shortcut and the logon entry. Your config, your bucket and
+your screenshots are left alone — delete the Worker and the bucket from the
+Cloudflare dashboard when you want them gone.
 
-- **ピン留めした exe のクリックで起動する**。クリックで起動した 2 個目のプロセスは
-  常駐中の本体に合図を送って即終了するので、タスクバーにボタンは出ず待ち時間もない。
-  合図の前に `AllowSetForegroundWindow` を呼び、前面に出る権利を本体へ渡している。
-- **オーバーレイはモーダルにしない**。`ShowDialog` だと前回の通知が閉じるだけで
-  選択中のオーバーレイごと巻き込まれて閉じる。`Show()` + `FormClosed` で受ける。
-- **先に画面を撮ってからオーバーレイを出す**。切り出しは撮影済みのビットマップから
-  行うので、暗転やちらつきが写り込まない。
-- **選択の終点はマウスアップの座標を使う**。Windows は `WM_MOUSEMOVE` を
-  キューが空のときしか作らないため、ボタンアップが最後の移動を追い越す。
-- **通知領域にアイコンを置かない**。右下の通知は自前のウィンドウで描いている。
+## Built with
+
+Cloudflare Workers + R2 for the server, C# / WinForms for the client, compiled by
+the `csc.exe` already on every Windows machine. The whole thing is about 1,500
+lines. See [README.ja.md](README.ja.md#作りの理由) for why it is put together the
+way it is.
+
+## License
+
+[MIT](LICENSE)
