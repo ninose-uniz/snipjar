@@ -20,7 +20,7 @@ New-Item -ItemType Directory -Force -Path $stage | Out-Null
 
 # zip に入れるもの。client/ と worker/ はソースなので、受け取った側で作り直せる
 $items = @(
-    'snipjar.exe', 'setup.ps1', 'install.ps1', 'build.ps1', 'release.ps1',
+    'snipjar.exe', 'install.bat', 'setup.ps1', 'install.ps1', 'build.ps1', 'release.ps1',
     'wrangler.toml', 'README.md', 'README.ja.md', 'LICENSE'
 )
 foreach ($item in $items) {

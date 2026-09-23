@@ -35,7 +35,9 @@ No .NET SDK. The client is built with the `csc.exe` that ships with Windows.
 
 1. Download the latest zip from [Releases](https://github.com/ninose-uniz/snipjar/releases/latest)
    and unpack it somewhere.
-2. Open PowerShell in that folder and run:
+2. **Double-click `install.bat`** — no need to open PowerShell yourself.
+
+   From a shell, if you prefer:
 
    ```powershell
    .\setup.ps1

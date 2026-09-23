@@ -32,7 +32,9 @@ English: [README.md](README.md)
 ## 導入
 
 1. [Releases](https://github.com/ninose-uniz/snipjar/releases/latest) から zip を落として展開
-2. そのフォルダで PowerShell を開いて実行:
+2. **`install.bat` をダブルクリック**（PowerShell を開く必要はありません）
+
+   コマンドで実行したい場合は同じフォルダで:
 
    ```powershell
    .\setup.ps1
