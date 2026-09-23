@@ -62,6 +62,21 @@ Get-FileHash .\snipjar.exe -Algorithm SHA256
 Or skip the release entirely and build it yourself — `build.ps1` needs nothing but
 Windows.
 
+## Installing on a second PC
+
+Running `setup.ps1` again would mint a new token and lock the first machine (and your
+browser session) out. Use the mode that leaves Cloudflare alone:
+
+```powershell
+.\setup.ps1 -ClientOnly
+```
+
+It asks for the `endpoint` and `token` from the first machine's
+`%APPDATA%\snipjar\config.ini`. Both machines then feed the same gallery.
+
+Reinstalling on the *same* PC is just `.\setup.ps1` — it keeps the existing token unless
+you pass `-NewToken`.
+
 ## Using it
 
 | | |

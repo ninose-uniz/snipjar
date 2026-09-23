@@ -56,6 +56,21 @@ Get-FileHash .\snipjar.exe -Algorithm SHA256
 
 リリースを使わず、自分でビルドしてもいい。`build.ps1` は Windows 以外に何も要らない。
 
+## 2 台目以降の PC に入れる
+
+`setup.ps1` をそのまま実行すると新しいトークンを発行してしまい、1 台目の設定とブラウザの
+ログインが無効になる。2 台目では Cloudflare を触らないモードを使う:
+
+```powershell
+.\setup.ps1 -ClientOnly
+```
+
+1 台目の `%APPDATA%\snipjar\config.ini` にある `endpoint` と `token` を聞かれるので、
+そのまま貼る。以後、両方の PC の撮ったものが同じ一覧に並ぶ。
+
+同じ PC で入れ直すだけなら `.\setup.ps1` でよい。既にトークンがあればそれを使い回す
+（作り直したいときだけ `-NewToken`）。
+
 ## 使い方
 
 | | |
