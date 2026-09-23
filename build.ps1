@@ -11,7 +11,11 @@ if (-not (Test-Path $csc)) {
 }
 
 if (-not (Test-Path $icon)) {
-    & (Join-Path $client 'make-icon.ps1')
+    throw @'
+clientpp.ico がありません。リポジトリに入っているはずのファイルです。
+デザイン (client\icon.svg) から作り直すなら client\make-icon.ps1 を実行してください
+(ラスタライズに Chrome か Edge が要ります)。
+'@
 }
 
 $sources = Get-ChildItem -Path $client -Filter '*.cs' | ForEach-Object { $_.FullName }

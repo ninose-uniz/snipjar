@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Snipjar</title>
+  <!-- 範囲選択の角括弧。中の四角が切り取った一枚 -->
+  <rect x="8" y="8" width="240" height="240" rx="58" fill="#1b1d21"/>
+  <g fill="none" stroke="#f2f4f7" stroke-width="19" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M62 96V62h34"/>
+    <path d="M194 96V62h-34"/>
+    <path d="M62 160v34h34"/>
+    <path d="M194 160v34h-34"/>
+  </g>
+  <rect x="99" y="99" width="58" height="58" rx="13" fill="#5aa9ff"/>
+</svg>

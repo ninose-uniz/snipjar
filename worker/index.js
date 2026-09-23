@@ -253,7 +253,7 @@ form.login button { width:100%; margin-top:10px; padding:11px; font:inherit; bor
 function loginPage(error) {
   return `<!doctype html><html lang="ja"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snipjar</title><style>${STYLE}</style>
+<title>Snipjar</title><link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20256%20256'%20width='256'%20height='256'%3E%20%3Ctitle%3ESnipjar%3C/title%3E%20%3Crect%20x='8'%20y='8'%20width='240'%20height='240'%20rx='58'%20fill='%231b1d21'/%3E%20%3Cg%20fill='none'%20stroke='%23f2f4f7'%20stroke-width='19'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%20%3Cpath%20d='M62%2096V62h34'/%3E%20%3Cpath%20d='M194%2096V62h-34'/%3E%20%3Cpath%20d='M62%20160v34h34'/%3E%20%3Cpath%20d='M194%20160v34h-34'/%3E%20%3C/g%3E%20%3Crect%20x='99'%20y='99'%20width='58'%20height='58'%20rx='13'%20fill='%235aa9ff'/%3E%20%3C/svg%3E"><style>${STYLE}</style>
 <form class="login" method="post" action="/gallery/auth">
   <h1>Snipjar</h1>
   ${error ? `<p class="error">${error}</p>` : ""}
@@ -266,7 +266,7 @@ function loginPage(error) {
 function galleryPage() {
   return `<!doctype html><html lang="ja"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Snipjar</title><style>${STYLE}</style>
+<title>Snipjar</title><link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20256%20256'%20width='256'%20height='256'%3E%20%3Ctitle%3ESnipjar%3C/title%3E%20%3Crect%20x='8'%20y='8'%20width='240'%20height='240'%20rx='58'%20fill='%231b1d21'/%3E%20%3Cg%20fill='none'%20stroke='%23f2f4f7'%20stroke-width='19'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%20%3Cpath%20d='M62%2096V62h34'/%3E%20%3Cpath%20d='M194%2096V62h-34'/%3E%20%3Cpath%20d='M62%20160v34h34'/%3E%20%3Cpath%20d='M194%20160v34h-34'/%3E%20%3C/g%3E%20%3Crect%20x='99'%20y='99'%20width='58'%20height='58'%20rx='13'%20fill='%235aa9ff'/%3E%20%3C/svg%3E"><style>${STYLE}</style>
 <header><h1>Snipjar</h1><div class="count" id="count">読み込み中…</div></header>
 <main><div class="grid" id="grid"></div><div id="tail"></div></main>
 <script>

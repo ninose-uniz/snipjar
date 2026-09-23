@@ -4,6 +4,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Snipjar — スクショは自分のストレージに</title>
 <meta name="description" content="範囲をドラッグしてコピーか保存。撮ったものは自分の Cloudflare R2 に貯まり、自分だけの一覧ページで見返せる Windows 用スクリーンショットツール。">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Snipjar — スクショは自分のストレージに">
+<meta property="og:description" content="範囲をドラッグしてコピーか保存。画像はあなた自身の Cloudflare に入り、預ける相手はいません。">
+<meta property="og:url" content="https://ninose-uniz.github.io/snipjar/">
+<meta property="og:image" content="https://ninose-uniz.github.io/snipjar/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root {
     color-scheme: light dark;
@@ -22,7 +29,10 @@
     font: 16px/1.75 "Yu Gothic UI", -apple-system, "Segoe UI", system-ui, sans-serif;
   }
   .wrap { max-width: 780px; margin: 0 auto; padding: 0 20px; }
-  header { padding: 80px 0 56px; }
+  header { padding: 72px 0 56px; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+  .brand img { border-radius: 9px; display: block; }
+  .brand span { font-weight: 700; font-size: 20px; letter-spacing: .01em; }
   h1 { font-size: 44px; line-height: 1.2; margin: 0 0 14px; letter-spacing: -0.01em; }
   .tagline { font-size: 19px; color: var(--sub); margin: 0 0 30px; }
   .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
@@ -61,6 +71,10 @@
 
 <div class="wrap">
   <header>
+    <div class="brand">
+      <img src="icon.svg" alt="" width="40" height="40">
+      <span>Snipjar</span>
+    </div>
     <h1>スクショは、自分の<br>ストレージに貯まる。</h1>
     <p class="tagline">
       範囲をドラッグして「コピー」か「保存」。撮ったものは <strong>あなたの</strong>

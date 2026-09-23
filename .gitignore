@@ -3,5 +3,4 @@ node_modules/
 dist/
 *.exe
 config.ini
-client/app.ico
 .dev.vars
