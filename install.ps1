@@ -23,6 +23,22 @@ function Confirm-Step([string[]]$lines) {
     if ($answer -notmatch '^[yY]') { throw '中止しました' }
 }
 
+# 常駐を止める。--quit で行儀よく終わらせたいが、プロセスの実行ファイルが
+# こちらから見えないことがある (別のコンテナで動いている場合など)。
+# そこで失敗しても止まらず、最後は必ず Stop-Process で片付ける。
+function Stop-Snipjar {
+    foreach ($p in @(Get-Process snipjar -ErrorAction SilentlyContinue)) {
+        try {
+            if ($p.Path -and (Test-Path -LiteralPath $p.Path)) { & $p.Path '--quit' }
+        } catch { }
+    }
+    Start-Sleep -Milliseconds 600
+    foreach ($p in @(Get-Process snipjar -ErrorAction SilentlyContinue)) {
+        try { Stop-Process -Id $p.Id -Force -ErrorAction Stop } catch { }
+    }
+}
+
+
 if ($Uninstall) {
     Confirm-Step @(
         '次を削除します:',
@@ -31,11 +47,7 @@ if ($Uninstall) {
         "  インストール先  $target",
         '設定 (%APPDATA%\snipjar\config.ini) は残します。'
     )
-    Get-Process snipjar -ErrorAction SilentlyContinue | ForEach-Object {
-        & $_.Path '--quit' 2>$null
-    }
-    Start-Sleep -Milliseconds 500
-    Get-Process snipjar -ErrorAction SilentlyContinue | Stop-Process -Force
+    Stop-Snipjar
     Remove-ItemProperty -Path $runKey -Name 'snipjar' -ErrorAction SilentlyContinue
     Remove-Item $shortcut -ErrorAction SilentlyContinue
     Remove-Item $target -Recurse -Force -ErrorAction SilentlyContinue
@@ -54,11 +66,7 @@ Confirm-Step @(
     '書き込むのは上の 3 か所だけです (すべて現在のユーザー用)。'
 )
 
-Get-Process snipjar -ErrorAction SilentlyContinue | ForEach-Object {
-    & $_.Path '--quit' 2>$null
-}
-Start-Sleep -Milliseconds 600
-Get-Process snipjar -ErrorAction SilentlyContinue | Stop-Process -Force
+Stop-Snipjar
 
 New-Item -ItemType Directory -Force -Path $target | Out-Null
 Copy-Item $built $exe -Force
