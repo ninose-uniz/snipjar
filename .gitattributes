@@ -1,0 +1,8 @@
+* text=auto
+# cmd.exe is CRLF-only: a .bat with LF endings silently does nothing
+*.bat text eol=crlf
+*.cmd text eol=crlf
+# PowerShell is fine either way, but keep them consistent on Windows
+*.ps1 text eol=crlf
+*.png binary
+*.ico binary

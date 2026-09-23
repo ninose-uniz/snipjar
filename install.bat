@@ -1,17 +1,19 @@
 @echo off
-rem Snipjar のインストール。このファイルをダブルクリックするだけ。
-rem PowerShell を開いてコマンドを打つ必要はありません。
+rem Snipjar installer - just double-click this file.
+rem It runs setup.ps1 with the execution policy handled.
+setlocal
 chcp 65001 >nul
-title Snipjar のセットアップ
+title Snipjar setup
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1" %*
-set EXITCODE=%ERRORLEVEL%
+set "EXITCODE=%ERRORLEVEL%"
 
 echo.
-if %EXITCODE% neq 0 (
-  echo セットアップが最後まで進みませんでした。上の表示を確認してください。
+if not "%EXITCODE%"=="0" (
+  echo Setup did not finish. Scroll up to see what happened.
 ) else (
-  echo 完了しました。このウィンドウは閉じて大丈夫です。
+  echo Done. You can close this window.
 )
 echo.
 pause
+endlocal
