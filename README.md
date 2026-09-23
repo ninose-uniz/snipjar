@@ -14,6 +14,7 @@ resident → click the pinned icon → the screen dims, crosshair cursor → dra
 
 ![The bar that appears when you release the drag](docs/actionbar.png)
 ![The notification in the bottom-right corner](docs/toast.png)
+![The gallery, newest first](docs/gallery.png)
 
 ## Why another screenshot tool
 

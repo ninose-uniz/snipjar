@@ -13,6 +13,7 @@ English: [README.md](README.md)
 
 ![離すと出るバー](docs/actionbar.png)
 ![右下の通知](docs/toast.png)
+![一覧ページ](docs/gallery.png)
 
 ## なぜ作ったか
 
